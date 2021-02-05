@@ -1,0 +1,149 @@
+﻿<h3>Notifications</h3>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#notificationModal">Create</button>
+
+<div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle">Create notification</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="notificationForm" method="post" class="form-inline">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="hidden" id="Id" name="Id" value="" />
+
+                        <label for="Message">Notification Message</label>
+                        <input type="text" class="form-control" id="Message" name="Message" aria-describedby="messageHelp" placeholder="Enter message" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" id="createNotification" class="btn btn-success" value="Submit" />
+                    <div id="updateFunctions" style="display: none;">
+                        <button id="clearForm" type="button" class="btn btn-secondary" style='margin-left:5px;'>Clear</button>
+                        <input type="submit" id="updateNotification" class="btn btn-success" value="Update" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<table id="notificationList" class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Message</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+@section scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadList();
+        });
+
+        function loadList() {
+            $.getJSON('/api/notification/findAll', function (jsonPayload) {
+                let notifications = JSON.parse(jsonPayload);
+                $(notifications).each(function (i, item) {
+                    let updateButton = `<button onClick='loadUpdate(${item.Id})' type="button" class="btn btn-info">Update</button>`;
+                    let deleteButton = `<button style='margin-left:5px;' onClick='deleteNotification(${item.Id})' type="button" class="btn btn-danger">Delete</button>`;
+                    $('#notificationList > tbody').append(`
+                                            <tr><th scope="col">${item.Id}</th>
+                                            <td scope="col">${item.Message}</td>
+                                            <td scope="col">${updateButton}${deleteButton}</td></tr>`
+                    );
+                });
+            });
+        }
+
+        $('#createNotification').click(function () {
+            $.post("api/notification/create",
+                $("#notificationForm").serialize(),
+                function (value) { },
+                "json"
+            );
+        });
+
+        function loadUpdate(id) {
+            $.ajax({
+                type: 'POST',
+                url: 'api/notification/find',
+                data: JSON.stringify(id),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (data) {
+                    let notification = JSON.parse(data);
+
+                    $("#Id").val(id);
+                    $("#Message").val(notification.Message);
+                    $("#createNotification").hide();
+                    $("#updateFunctions").show();
+                    $("#Message").focus();
+                    $('#notificationModal').modal('show');
+                },
+                error: function (data) {
+                    bootbox.alert(data.responseJSON.Message);
+                }
+            });
+        }
+
+        $('#updateNotification').click(function () {
+            $.post("api/notification/update",
+                $("#notificationForm").serialize(),
+                function (value) {},
+                "json"
+            );
+        });
+
+        $('#clearForm').click(function () {
+            $("#Id").val('');
+            $("#Message").val('');
+            $("#createNotification").show();
+            $("#updateFunctions").hide();
+            $('#notificationModal').modal('hide');
+        });
+
+        function deleteNotification(id) {
+            bootbox.confirm({
+                message: "Delete notification?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            type: 'DELETE',
+                            url: 'api/notification/delete',
+                            data: JSON.stringify(id),
+                            contentType: 'application/json; charset=utf-8',
+                            dataType: 'json',
+                            success: function (data) {
+                                bootbox.alert({ message: data, size: 'small' });
+                                $('#notificationList > tbody').empty();
+                                loadList();
+                            },
+                            error: function (data) {
+                                bootbox.alert(data.responseJSON.Message);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    </script>
+}
