@@ -18,13 +18,5 @@ namespace lawliet.Controllers
 
             return View();
         }
-
-        public ActionResult Login()
-        {
-            ViewBag.GitHub = "github.com/richardvenite";
-            ViewBag.Title = "Lawliet";
-
-            return View();
-        }
     }
 }

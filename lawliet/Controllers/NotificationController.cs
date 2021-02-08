@@ -15,6 +15,7 @@ namespace lawliet.Controllers
     public class NotificationController : ApiController
     {
         [HttpPost]
+        [Authorize]
         public IHttpActionResult Create([FromBody] NotificationDTO notification)
         {
             try
@@ -36,6 +37,7 @@ namespace lawliet.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public IHttpActionResult Update([FromBody] NotificationDTO notification)
         {
             try
@@ -57,6 +59,7 @@ namespace lawliet.Controllers
         }
 
         [HttpDelete]
+        [Authorize]
         public IHttpActionResult Delete([FromBody] int idNotification)
         {
             try
@@ -78,6 +81,7 @@ namespace lawliet.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public IHttpActionResult Find([FromBody] int idNotification)
         {
             try
@@ -99,6 +103,7 @@ namespace lawliet.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public IHttpActionResult FindAll()
         {
             try
